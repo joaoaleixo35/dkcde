@@ -1,0 +1,53 @@
+version: "2"
+services:
+  frontend:
+    image: jaleixo/os_cde:latestFE
+    environment:
+      - SA_PASSWORD=admin
+      - ACCEPT_EULA=Y
+      - KEYCLOAK_URL=http://localhost:8080
+      - OSCDE_API_URL=http://localhost:5044
+      - FRONTEND_URL=http://localhost:3000
+
+    ports:
+      - "3000:80"
+
+  backend:
+    image: jaleixo/os_cde:latest
+    environment:
+      # - DB_CONNECTION_STRING=Data Source=34.140.52.197;Initial Catalog=osCDEdb;Integrated Security=False;User ID=sqlserver;Password=admin-db-pass;Pooling=True;
+      # - DB_CONNECTION_STRING=Data Source=host.docker.internal,1433;Initial Catalog=osCDEdb;Integrated Security=False;User ID=DKUserDB;Password=password-db;Pooling=True;TrustServerCertificate=True;
+      - DB_CONNECTION_STRING=Data Source=sql-server-db,1433;Initial Catalog=osCDEdb;User ID=sa;Password=Password-db!!;Pooling=True;TrustServerCertificate=True;
+      - KEYCLOAK_URL=http://localhost:8080/
+      - FILES_FOLDER=/app/FILES_FOLDER
+    ports:
+      - "5044:80"
+
+    volumes:
+      - C:\\FilesformBD:/app/FILES_FOLDER
+
+  keycloak:
+    image: keycloak/keycloak:latest
+    environment:
+    #  KC_HOSTNAME: localhost
+    #  KC_HOSTNAME_PORT: 8080
+     KEYCLOAK_ADMIN: admin
+     KEYCLOAK_ADMIN_PASSWORD: admin
+    command: -v start-dev --import-realm
+    ports:
+      - "8080:8080"
+    volumes:
+      - C:\KC_docker\keycloak-22.0.1\keycloak-22.0.1\bin\:/opt/keycloak/data/import
+
+  sql-server-db:
+    container_name: sql-server-db
+    image: mcr.microsoft.com/mssql/server:2019-latest
+    ports:
+      - "1533:1433"
+    environment:
+      SA_PASSWORD: "Password-db!!"
+      ACCEPT_EULA: "Y"
+    volumes:
+      - C:\Program Files\Microsoft SQL Server\MSSQL15.MSSQLSERVER_LJA\MSSQL\Backup\cde.bak:/var/opt/mssql/backup
+volumes:
+  uploaded_files:
